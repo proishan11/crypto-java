@@ -2,11 +2,14 @@ package service;
 
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.util.*;
 
 public class JwkLocalService {
@@ -49,6 +52,27 @@ public class JwkLocalService {
         );
 
 //        jweObject.encrypt(new RSAEncrypter(recipientPublicKey));
+    }
+
+
+    // returns singed payload
+    public String sign(String payload) throws Exception{
+
+        JWSSigner signer = new RSASSASigner(kp);
+        JWSObject jwsObject = new JWSObject(
+                new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(kp.getKeyID()).build(),
+                new Payload(payload)
+        );
+
+        jwsObject.sign(signer);;
+
+        return jwsObject.serialize();
+    }
+
+    public Boolean verify(String jwt) throws Exception{
+        JWSObject jwsObject = JWSObject.parse(jwt);
+        JWSVerifier verifier = new RSASSAVerifier(kp.toPublicJWK());
+        return jwsObject.verify(verifier);
     }
 
 }
